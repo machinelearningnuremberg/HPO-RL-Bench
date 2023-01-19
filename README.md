@@ -3,7 +3,7 @@
 
 ### Download the data
 
-Get the data from [HERE](https://rewind.tf.uni-freiburg.de/index.php/s/R9FwPznPecJRqip), download this repo and put it at the level of this repository folder.
+Get the data from [HERE](https://drive.google.com/file/d/1AW5_6xGGiklteZgyyDBxSsf6kOLuFPkO/view?usp=share_link), download this repo and put it at the level of this repository folder.
 
 ### Load and query the benchmark
 
