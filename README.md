@@ -39,14 +39,4 @@ queried_data = benchmark.get_metrics(configuration_to_query, budget=50)
 For an insightful usage description please check the file `benchmark-usages-examples.ipynb`
 
 
-### Cite Us
 
-Please cite us when using AutoRL-Bench in your work by using the bibtex below:
-```
-@inproceedings { autorlbench-22,
-  author = {Gresa Shala and Sebastian Pineda and Andr{\'e} Biedenkapp and Frank Hutter and Josif Grabocka},
-  title = {AutoRL-Bench 1.0},
-  booktitle = {Proceedings of the Workshop on Meta-Learning (NeurIPS)},
-  year = {2022}
-}
-```
