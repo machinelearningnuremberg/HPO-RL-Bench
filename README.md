@@ -1,6 +1,5 @@
 # HPO-RL-Bench
 
-Repo with the API and benchmark-generating code for [AutoRL-Bench](https://rewind.tf.uni-freiburg.de/remote.php/dav/files/shalag/RELEA/Publications/Accepted/AutoRLBench/AutoRL_Benchmark.pdf)
 
 ### Download the data
 
