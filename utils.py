@@ -1,0 +1,166 @@
+import pickle
+from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.env_util import make_atari_env
+import os
+import time
+import gym
+import numpy as np
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.results_plotter import load_results, ts2xy
+from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.vec_env import VecMonitor
+from functools import partial
+
+ATARI_ENVS = ['Pong-v0', 'Alien-v0', 'BankHeist-v0',
+              'BeamRider-v0', 'Breakout-v0', 'Enduro-v0',
+              'Phoenix-v0', 'Seaquest-v0', 'SpaceInvaders-v0',
+              'Riverraid-v0', 'Tennis-v0', 'Skiing-v0', 'Boxing-v0',
+              'Bowling-v0', 'Asteroids-v0']
+MUJOCO_ENVS = ['Ant-v2', 'Hopper-v2', 'Humanoid-v2']
+CONTROL_ENVS = ['CartPole-v1', 'MountainCar-v0', 'Acrobot-v1', 'Pendulum-v0']
+
+class SaveOnBestTrainingRewardCallback(BaseCallback):
+    """
+    Callback for saving a model (the check is done every ``check_freq`` steps)
+    based on the training reward (in practice, we recommend using ``EvalCallback``).
+
+    :param check_freq:
+    :param log_dir: Path to the folder where the model will be saved.
+      It must contains the file created by the ``Monitor`` wrapper.
+    :param verbose: Verbosity level.
+    """
+    def __init__(self, check_freq: int, log_dir: str, verbose: int = 1, seed: int = 12345, start_time: float = time.time()):
+        super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
+        self.check_freq = check_freq
+        self.log_dir = log_dir
+        self.save_path = os.path.join(log_dir, 'best_model')
+        self.best_mean_reward = -np.inf
+        self.seed = seed
+        self.start_time = time.time()
+        self.timestamps = []
+
+    def _init_callback(self) -> None:
+        # Create folder if needed
+        if self.save_path is not None:
+            os.makedirs(self.save_path, exist_ok=True)
+
+    def _on_step(self) -> bool:
+        if self.n_calls % self.check_freq == 0:
+
+          # Retrieve training reward
+          x, y = ts2xy(load_results(self.log_dir), 'timesteps')
+          if len(x) > 0:
+              # Mean training reward over the last 100 episodes
+              mean_reward = np.mean(y[-100:])
+              if mean_reward > self.best_mean_reward:
+                  self.best_mean_reward = mean_reward
+
+        return True
+    def _on_rollout_end(self) -> None:
+        self.timestamps.append(time.time() - self.start_time)
+
+    def _on_training_end(self) -> None:
+        """
+        This event is triggered before exiting the `learn()` method.
+        """
+        # Retrieve training reward
+        x, y = ts2xy(load_results(self.log_dir), 'timesteps')
+        if len(x) > 0:
+              # Mean training reward over the last 100 episodes
+             mean_reward = np.mean(y[-100:])
+             # for idx, re in enumerate(y):
+             #     print("Episode %s: %s" % (idx+1, re))
+             if self.verbose > 0:
+                print(f"Num timesteps: {self.num_timesteps}")
+                print(f"Best mean reward: {self.best_mean_reward:.2f} - Last mean reward per episode: {mean_reward:.2f}")
+             print("Rewards Train: %s" % y[-1])
+             print("Times Train: %s" % x[-1])
+             print("Times Train: %s" % self.timestamps[-1])
+             with open(os.path.join(self.log_dir, "rewards_train"), 'wb') as f:
+                pickle.dump(y.tolist(), f)
+             with open(os.path.join(self.log_dir, "timesteps_train"), 'wb') as g:
+                pickle.dump(x.tolist(), g)
+        with open(os.path.join(self.log_dir, "timestamps_train"), 'wb') as g:
+            pickle.dump(self.timestamps, g)
+
+
+        return True
+
+def make_environment(environment, seed):
+    def _init():
+        env = gym.make(environment)
+        env.seed(seed)
+        return env
+    return _init
+
+def run_rl_algorithm(rl_algorithm, rl_algorithm_name, config: dict, environment: str = 'CartPole-v1', total_timesteps: float = 1e6, seed: int = 1):
+    # Create log dir
+
+    log_dir = "tmp_%s_%s_%s/" % (rl_algorithm_name, environment, seed)
+    os.makedirs(log_dir, exist_ok=True)
+    # Create the callback: check every 1000 steps
+    model = None
+    if environment in ATARI_ENVS:
+        env = make_atari_env(environment, n_envs=1, seed=0)
+        env = VecMonitor(env, log_dir)
+        policy = 'CnnPolicy'
+        # env = AtariWrapper(env)
+    else:
+        env = gym.make(environment)
+        env = Monitor(env, log_dir)
+        policy = 'MlpPolicy'
+    start = time.time()
+    callback = SaveOnBestTrainingRewardCallback(check_freq=1000, log_dir=log_dir, seed=seed, start_time=start)
+    rewards = []
+    std_rewards = []
+    times_eval = []
+    timesteps_eval = []
+
+    # Train the agent
+    timesteps = int(total_timesteps/1e4)
+    print("Running for %s iterations" % timesteps)
+    for i in range(timesteps):
+        print("Iteration %s" % i)
+        if environment in ATARI_ENVS:
+            eval_env = make_atari_env(environment, n_envs=5, seed=0)
+        else:
+            eval_env = gym.make(environment)
+            eval_env = Monitor(eval_env)
+        if model is None:
+            model = rl_algorithm(env=env, policy=policy, verbose=0, seed=seed, **config)
+        else:
+            model = rl_algorithm.load(path=os.path.join(log_dir, "%s_model" % rl_algorithm_name), env=env)
+        env.reset()
+        model.learn(total_timesteps=int(1e4), callback=callback)
+        # Returns average and standard deviation of the return from the evaluation
+        r, std_r = evaluate_policy(model=model, env=eval_env)
+        times_eval.append(time.time() - start)
+        rewards.append(r)
+        std_rewards.append(std_r)
+        with open(os.path.join(log_dir, "timesteps_train"), 'rb') as f:
+            timesteps_train = pickle.load(f)
+        timesteps_eval.append(timesteps_train[-1])
+        print("Rewards %s" % rewards[-1])
+        print("Std rewards %s" % std_rewards[-1])
+        print("Times: %s" % times_eval[-1])
+        print("Timesteps Eval: %s" % timesteps_eval[-1])
+        model.save(os.path.join(log_dir, "%s_model" % rl_algorithm_name))
+    with open(os.path.join(log_dir, "rewards_train"), 'rb') as f:
+        rewards_train = pickle.load(f)
+    with open(os.path.join(log_dir, "timesteps_train"), 'rb') as f:
+        timesteps_train = pickle.load(f)
+    with open(os.path.join(log_dir, "timestamps_train"), 'rb') as f:
+        timestamps_train = pickle.load(f)
+    data = {}
+    for hp_name, hp_value in config.items():
+        data[hp_name] = hp_value
+    data["returns_eval"] = rewards
+    data["std_returns_eval"] = std_rewards
+    data["timestamps_eval"] = times_eval
+    data["timesteps_eval"] = timesteps_eval
+    data["returns_train"] = rewards_train
+    data["timesteps_train"] = timesteps_train
+    data["timestamps_train"] = timestamps_train
+
+    return data
+

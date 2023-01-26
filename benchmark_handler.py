@@ -1,15 +1,23 @@
 import json
 import os
-
+from typing import Union
+from utils import run_rl_algorithm
 class BenchmarkHandler:
 
-    def __init__(self, data_path: str="/data_arl_bench", environment: str=None, search_space: str=None, 
-                       static: bool=True, return_names=None, seed = None):
+    def __init__(self, data_path: str="/data_arl_bench", environment: str=None, search_space: Union[str, dict]=None,
+                       static: bool=True, return_names=None, seed = None, rl_algorithm = None):
 
         self.data_path = data_path
         
         self.environment = environment
-        self.search_space = search_space
+        if type(search_space) == str:
+            self.search_space = search_space
+        else:
+            for ss_name, ss_dict in search_space.items():
+                self.search_space = ss_name
+                self.search_space_dict = ss_dict
+            assert rl_algorithm is not None, "For new search spaces, an RL Algorithm object must be provided"
+        self.rl_algorithm = rl_algorithm
         self.seed =  seed
         self.return_names = return_names
         self.static = static
@@ -102,11 +110,13 @@ class BenchmarkHandler:
 
 
     def get_search_space(self, search_space, static: bool=True):
-
-        if static:
-            return self.search_space_structure["static"][search_space]
+        if self.rl_algorithm is None:
+            if static:
+                return self.search_space_structure["static"][search_space]
+            else:
+                return self.search_space_structure["dynamic"][search_space]
         else:
-            return self.search_space_structure["dynamic"][search_space]
+            return self.search_space_dict
 
     def get_metrics(self, config: dict, search_space: str="", environment: str="" , seed: int=None, budget: int=199, static: bool=True):
 
@@ -123,59 +133,65 @@ class BenchmarkHandler:
             assert self.seed != None, "Please set a seed"
             seed = self.seed
 
+        if self.rl_algorithm is None:
+            if static:
+                lr = config.get("lr")
+                gamma = config.get("gamma")
+                if search_space in ["DDPG", "SAC", "TD3"]:
+                    tau = config.get("tau")
+                    with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
+                                        '%s_%s_random_lr_%s_gamma_%s_tau_%s_seed%s_eval.json'%(environment, search_space,
+                                                                                            lr, gamma, tau, seed))) as f:
+                        data = json.load(f)
+                        train_timesteps_index = budget
+                    return self._build_return_dict(data, budget, train_timesteps_index)
 
-        if static:
-            lr = config.get("lr")
-            gamma = config.get("gamma")
-            if search_space in ["DDPG", "SAC", "TD3"]:
-                tau = config.get("tau")
-                with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
-                                    '%s_%s_random_lr_%s_gamma_%s_tau_%s_seed%s_eval.json'%(environment, search_space,
-                                                                                        lr, gamma, tau, seed))) as f:
-                    data = json.load(f)
-                    train_timesteps_index = budget
-                return self._build_return_dict(data, budget, train_timesteps_index)
+                elif search_space == "PPO":
+                    clip = config.get("clip")
+                    with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
+                                        '%s_%s_random_lr_%s_gamma_%s_clip_%s_seed%s_eval.json'%(environment, search_space,
+                                                                                            lr, gamma, clip, seed))) as f:
+                        data = json.load(f)
+                        train_timesteps_index = budget
 
-            elif search_space == "PPO":
-                clip = config.get("clip")
-                with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
-                                    '%s_%s_random_lr_%s_gamma_%s_clip_%s_seed%s_eval.json'%(environment, search_space,
-                                                                                        lr, gamma, clip, seed))) as f:
-                    data = json.load(f)
-                    train_timesteps_index = budget
+                    return self._build_return_dict(data, budget, train_timesteps_index)
 
-                return self._build_return_dict(data, budget, train_timesteps_index)
-            
-            elif search_space == "A2C":
+                elif search_space == "A2C":
+                    with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
+                                        '%s_%s_random_lr_%s_gamma_%s_seed%s_eval.json'%(environment, search_space,
+                                                                                            lr, gamma, seed))) as f:
+                        data = json.load(f)
+                        train_timesteps_index = budget
+                    return self._build_return_dict(data, budget, train_timesteps_index)
+
+            else:
+
+                assert search_space in self.valid_dynamic_spaces, "This is not a valid dynamic space"
+                lrs = config.get("lr")
+                if len(lrs) == 1:
+                    lrs = lrs * 3
+                elif len(lrs) == 2:
+                    lrs.append(lrs[1])
+
+                gammas = config.get("gamma")
+                if len(gammas) == 1:
+                    gammas = gammas * 3
+                elif len(gammas) == 2:
+                    gammas.append(gammas[1])
+
                 with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
-                                    '%s_%s_random_lr_%s_gamma_%s_seed%s_eval.json'%(environment, search_space,
-                                                                                        lr, gamma, seed))) as f:
+                                    '%s_%s_random_lr_%s%s%s_gamma_%.2f%.2f%.2f_seed%s_eval.json'%(environment, search_space,
+                                                                                            lrs[0], lrs[1], lrs[2],
+                                                                                            gammas[0], gammas[1],
+                                                                                            gammas[2], seed))) as f:
                     data = json.load(f)
-                    train_timesteps_index = budget
-                return self._build_return_dict(data, budget, train_timesteps_index)
-            
+                    train_timesteps_index = data["timesteps_train"].index(data["timesteps_eval"][budget-1])
         else:
-
-            assert search_space in self.valid_dynamic_spaces, "This is not a valid dynamic space"
-            lrs = config.get("lr")
-            if len(lrs) == 1:
-                lrs = lrs * 3
-            elif len(lrs) == 2:
-                lrs.append(lrs[1])
-
-            gammas = config.get("gamma")
-            if len(gammas) == 1:
-                gammas = gammas * 3
-            elif len(gammas) == 2:
-                gammas.append(gammas[1])
-
-            with open(os.path.join(self.data_path, 'data_arl_bench', search_space, environment,
-                                '%s_%s_random_lr_%s%s%s_gamma_%.2f%.2f%.2f_seed%s_eval.json'%(environment, search_space,
-                                                                                        lrs[0], lrs[1], lrs[2],
-                                                                                        gammas[0], gammas[1],
-                                                                                        gammas[2], seed))) as f:
-                data = json.load(f)
-                train_timesteps_index = data["timesteps_train"].index(data["timesteps_eval"][budget-1])
+            for key in self.search_space_dict.keys():
+                assert key in config.keys(), "The configuration must define a value for all the hyperparameters in the search space."
+            data = run_rl_algorithm(rl_algorithm=self.rl_algorithm, rl_algorithm_name=search_space, config=config,
+                                    environment=environment, seed=seed, total_timesteps=budget * 1e4)
+            train_timesteps_index = budget
             return self._build_return_dict(data, budget, train_timesteps_index)
 
 
