@@ -40,6 +40,7 @@ queried_data = benchmark.get_metrics(configuration_to_query, budget=50)
 
 ### Further usage
 
+Try directly the benchmark by executing [this example](https://colab.research.google.com/drive/1mDKkXVP7Tf_IzZ6AYVrkFrZsoJZ93TgZ?usp=sharing) on our Jupyter Notebook.
 For an insightful usage description please check the file `benchmark-usages-examples.ipynb`
 
 
