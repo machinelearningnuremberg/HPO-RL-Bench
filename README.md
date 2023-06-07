@@ -11,7 +11,7 @@ Get the data from [HERE](https://drive.google.com/file/d/1AW5_6xGGiklteZgyyDBxSs
 
 `conda activate hpo_rl_bench`
 
-`conda install -r requirements.txt`
+`pip install -r requirements.txt`
 
 
 **Note:** You might need to install additional libraries for C++. 
