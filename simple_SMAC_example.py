@@ -2,8 +2,8 @@ import numpy as np
 import itertools
 from benchmark_handler import BenchmarkHandler
 import matplotlib.pyplot as plt
-from optimizers.random_search import RandomSearch
-
+from optimizers.smac_mf import SMAC_MF
+from functools import partial
 
 
 search_space = "PPO"
@@ -14,14 +14,11 @@ benchmark = BenchmarkHandler(data_path='',
                              return_names = ["returns_eval"],
                              seed = 0)
 
-random_search = RandomSearch(search_space=benchmark.get_search_space(search_space),
-                             obj_function=benchmark.get_metrics,
-                             max_budget=99)
+gp = SMAC_MF(search_space=benchmark.get_search_space(search_space),
+                             obj_function=partial(benchmark.get_metrics, return_final_only=True))
 
-n_iters = 100
-response_list = []
-incumbents_list = []
-best_conf, best_score = random_search.suggest(n_iters)
+n_iters = 10
+best_conf, best_score = gp.suggest(n_iterations=n_iters)
 print(f"Best configuration found is {best_conf}")
 print(f"Best final evaluation return is {best_score}")
 

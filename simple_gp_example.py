@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 from benchmark_handler import BenchmarkHandler
 import matplotlib.pyplot as plt
-from optimizers.random_search import RandomSearch
+from optimizers.gp import GP
 
 
 
@@ -14,14 +14,17 @@ benchmark = BenchmarkHandler(data_path='',
                              return_names = ["returns_eval"],
                              seed = 0)
 
-random_search = RandomSearch(search_space=benchmark.get_search_space(search_space),
+gp = GP(search_space=benchmark.get_search_space(search_space),
                              obj_function=benchmark.get_metrics,
                              max_budget=99)
 
-n_iters = 100
-response_list = []
-incumbents_list = []
-best_conf, best_score = random_search.suggest(n_iters)
+n_iters = 10
+n_init_configs = 4
+init_configs_idx = np.random.choice(gp.pending_config, n_init_configs)
+init_configs = []
+for idx in init_configs_idx:
+    init_configs.append(gp.valid_configurations[idx])
+best_conf, best_score = gp.suggest(n_iterations=n_iters, init_configs=init_configs)
 print(f"Best configuration found is {best_conf}")
 print(f"Best final evaluation return is {best_score}")
 
