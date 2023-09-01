@@ -162,7 +162,7 @@ class BenchmarkHandler:
             if extended is None:
                 extended = self.extended
             if static:
-                lr = config.get("lr")
+                lr = int(config.get("lr"))
                 gamma = config.get("gamma")
 
                 if search_space == "DQN":
@@ -385,7 +385,7 @@ class BenchmarkHandler:
                 if os.path.exists(os.path.join(DATA_PATH, '%s_%s_%s.json' % (search_space, environment, seed))):
                     with open(os.path.join(DATA_PATH, '%s_%s_%s.json' % (search_space, environment, seed))) as mm:
                         min_max = json.load(mm)
-                lr = config.get("lr")
+                lr = int(config.get("lr"))
                 gamma = config.get("gamma")
                 if search_space in ["DDPG", "SAC", "TD3"]:
                     tau = config.get("tau")

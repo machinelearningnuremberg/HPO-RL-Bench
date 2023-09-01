@@ -11,7 +11,7 @@ search_space = "PPO"
 benchmark = BenchmarkHandler(data_path='',
                              environment = "Pong-v0",
                              search_space = search_space,
-                             return_names = ["returns_eval"],
+                             return_names = ["eval_avg_returns"],
                              seed = 0)
 
 gp = SMAC_MF(search_space=benchmark.get_search_space(search_space),

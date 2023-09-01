@@ -21,7 +21,7 @@ class RandomSearch(Optimizer):
             conf_ix = next_confs_ix[i]
             conf = self.valid_configurations[conf_ix]
             result = self.obj_function(config=conf, budget=self.constant_budget)
-            final_avg_reward = result["returns_eval"][self.constant_budget-1]
+            final_avg_reward = result["eval_avg_returns"][self.constant_budget-1]
             if final_avg_reward >= best_return:
                 best_return = final_avg_reward
                 best_conf = conf

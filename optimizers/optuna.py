@@ -99,7 +99,7 @@ class Optuna(Optimizer):
                 config[hp_name] = sampled_hyperparams[hp_name]
             for i, bud in enumerate(np.arange(self.budget_inc, self.constant_budget, self.budget_inc)):
                 result = self.obj_function(config=config, budget=bud)
-                final_return = result["returns_eval"][-1]
+                final_return = result["eval_avg_returns"][-1]
                 trial.report(final_return, i)
                 if trial.should_prune():
                     break

@@ -11,7 +11,7 @@ search_space = "PPO"
 benchmark = BenchmarkHandler(data_path='',
                              environment = "Pong-v0",
                              search_space = search_space,
-                             return_names = ["returns_eval"],
+                             return_names = ["eval_avg_returns"],
                              seed = 0)
 
 optuna_ = Optuna(search_space_name=search_space, search_space=benchmark.get_search_space(search_space),

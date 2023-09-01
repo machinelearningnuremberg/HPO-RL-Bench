@@ -57,7 +57,7 @@ class DyHPO(Optimizer):
             for i, hp_name in enumerate(self.hp_names):
                 config[hp_name] = config_tuple[i]
             result = self.obj_function(config=config, budget=budget)
-            performance_curve = result["returns_eval"]
+            performance_curve = result["eval_avg_returns"]
             score = performance_curve[-1]
             dyhpo_surrogate.observe(hp_index, budget, performance_curve)
             budget_cost = 0

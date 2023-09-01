@@ -33,10 +33,10 @@ class GP(Optimizer):
                 conf_ = []
                 for hp in self.hp_names:
                     conf_.append(conf[hp])
-                y[tuple(conf_)] = result["returns_eval"][:self.constant_budget]
+                y[tuple(conf_)] = result["eval_avg_returns"][:self.constant_budget]
                 x.append(tuple(conf_))
-                if result["returns_eval"][self.constant_budget-1] > incumbent:
-                    incumbent = result["returns_eval"][self.constant_budget-1]
+                if result["eval_avg_returns"][self.constant_budget-1] > incumbent:
+                    incumbent = result["eval_avg_returns"][self.constant_budget-1]
                     inc_x = conf
             for _ in range(n_iterations):
                 done = False
@@ -59,10 +59,10 @@ class GP(Optimizer):
                     conf_ = []
                     for hp in self.hp_names:
                         conf_.append(conf[hp])
-                    y[tuple(conf_)] = result["returns_eval"][:self.constant_budget]
+                    y[tuple(conf_)] = result["eval_avg_returns"][:self.constant_budget]
                     x.append(tuple(conf_))
-                    if result["returns_eval"][self.constant_budget-1] > incumbent:
-                        incumbent = result["returns_eval"][self.constant_budget-1]
+                    if result["eval_avg_returns"][self.constant_budget-1] > incumbent:
+                        incumbent = result["eval_avg_returns"][self.constant_budget-1]
                         inc_x = next_config
                     done = True
                     print(incumbent)

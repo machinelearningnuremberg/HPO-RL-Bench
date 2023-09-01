@@ -10,7 +10,7 @@ search_space = "PPO"
 benchmark = BenchmarkHandler(data_path='',
                              environment = "Pong-v0",
                              search_space = search_space,
-                             return_names = ["returns_eval"],
+                             return_names = ["eval_avg_returns"],
                              seed = 0)
 
 benchmark_ = RunRLAlgorithm(environment = "Pong-v0",
