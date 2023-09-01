@@ -28,7 +28,7 @@ class RandomSearch:
 benchmark = BenchmarkHandler(data_path='',
                              environment = "Pong-v0",
                              search_space = "PPO",
-                             return_names = ["returns_eval"],
+                             return_names = ["eval_avg_returns"],
                              seed = 0)
 
 

@@ -14,7 +14,7 @@ search_space = {"DQN":
 benchmark = BenchmarkHandler(data_path='',
                              environment='CartPole-v1',
                              search_space=search_space,
-                             return_names=["returns_eval"],
+                             return_names=["eval_avg_returns"],
                              seed=0,
                              rl_algorithm=DQN)
 
