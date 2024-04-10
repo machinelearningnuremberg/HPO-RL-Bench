@@ -1,18 +1,11 @@
-import numpy as np
-import itertools
 from benchmark_handler import BenchmarkHandler
-import matplotlib.pyplot as plt
 from optimizers.random_search import RandomSearch
-
-
 
 search_space = "PPO"
 
-benchmark = BenchmarkHandler(data_path='',
-                             environment = "Pong-v0",
-                             search_space = search_space,
-                             return_names = ["returns_eval"],
-                             seed = 0)
+benchmark = BenchmarkHandler(environment="Pong-v0",
+                             search_space=search_space,
+                             seed=0)
 
 random_search = RandomSearch(search_space=benchmark.get_search_space(search_space),
                              obj_function=benchmark.get_metrics,

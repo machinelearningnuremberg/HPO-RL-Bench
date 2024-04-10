@@ -3,7 +3,7 @@ from ray import tune
 from ray.tune.schedulers.pb2 import PB2
 logging.basicConfig(level=logging.INFO)
 import itertools
-from optimizer import Optimizer
+from optimizers.optimizer import Optimizer
 
 
 class CustomStopper(tune.Stopper):
@@ -17,23 +17,24 @@ class CustomStopper(tune.Stopper):
     def stop_all(self):
         return self.should_stop
 
-class PBT(Optimizer):
+class PB2Optimizer(Optimizer):
 
-    def __init__(self, search_space_name: str = None, search_space: dict = None, obj_function = None, max_budget: int = 100):
+    def __init__(self, search_space_name: str = None, search_space: dict = None, obj_function = None,
+                 max_budget: int = 100, seed: int = 0):
         super().__init__(search_space, obj_function)
         self.cartesian_prod_of_configurations = list(itertools.product(*tuple(search_space.values())))
         self.constant_budget = max_budget
         self.search_space_name = search_space_name
+        self.seed = seed
         bounds = {}
         for key, value in self.search_space.items():
             bounds[key] = list([min(value), max(value)])
         self.scheduler = PB2(
-            hyperparam_mutations=bounds,
+            hyperparam_bounds=bounds,
             time_attr="training_iteration",
             metric="mean_accuracy",
             mode="max",
             perturbation_interval=33,
-            resample_probability=0.25,
             quantile_fraction=0.25,  # copy bottom % with top %
             )
         self.stopper = CustomStopper(max_iter=max_budget)
@@ -51,9 +52,7 @@ class PBT(Optimizer):
             checkpoint_score_attr="mean_accuracy",
             keep_checkpoints_num=4,
             num_samples=8,
-            config=config_space,
-            metric="mean_accuracy",
-            mode="max")
+            config=config_space)
         best_conf = analysis.best_config
         best_return = analysis.best_result
 

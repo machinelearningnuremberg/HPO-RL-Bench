@@ -9,7 +9,7 @@ from sklearn import feature_selection as f
 
 
 sns.set() # Setting seaborn as default style even if use only matplotlib
-def get_aggregated_results (benchmark, space_name="PPO", budget= 99, metric = "returns_eval", smoke_test = False):
+def get_aggregated_results (benchmark, space_name="PPO", budget= 99, metric = "eval_avg_returns", smoke_test = False):
 
     search_space = benchmark.get_search_space(space_name)
     hps_names = list(search_space.keys())
@@ -25,9 +25,6 @@ def get_aggregated_results (benchmark, space_name="PPO", budget= 99, metric = "r
         temp_seed_ranks = []
         for environment in environments:
             results_history = []
-            
-            if space_name == "SAC" and environment=="Ant-v2":
-                print("SAC")
             try: 
                 benchmark.set_env_space_seed(search_space=space_name, environment=environment, seed=seed)
                 temp_failed_confs = []
@@ -95,8 +92,7 @@ def plot_catplot_on_axis(benchmark, space_name, smoke_test = False):
     return subset_results, features_rank, configuration_structure, hps 
     
 
-data_path = ""
-benchmark = BenchmarkHandler(data_path=data_path)
+benchmark = BenchmarkHandler()
 
 
 n_configurations_to_plot = 4
@@ -109,7 +105,7 @@ flierprops = dict(marker='o', markerfacecolor='green', markersize=12,
 medianprops = dict(linestyle='-', linewidth=linewidth*3, color='firebrick')
 meanpointprops = dict(marker='D', markeredgecolor='black', markersize=12,  markerfacecolor='firebrick')
 meanlineprops = dict(linestyle='--', linewidth=linewidth, color='purple')
-algorithms = ["PPO","A2C", "DDPG", "SAC", "TD3"]
+algorithms = ["PPO","A2C", "DDPG", "SAC", "TD3", "DQN"]
 n_algorithms = len(algorithms)
 fig1, axis1 = plt.subplots(1,n_algorithms,figsize=(15*n_algorithms,15))
 fig2, axis2 = plt.subplots(1,n_algorithms,figsize=(15*n_algorithms,15))

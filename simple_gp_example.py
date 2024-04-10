@@ -1,22 +1,17 @@
 import numpy as np
-import itertools
 from benchmark_handler import BenchmarkHandler
-import matplotlib.pyplot as plt
 from optimizers.gp import GP
-
 
 
 search_space = "PPO"
 
-benchmark = BenchmarkHandler(data_path='',
-                             environment = "Pong-v0",
-                             search_space = search_space,
-                             return_names = ["eval_avg_returns"],
-                             seed = 0)
+benchmark = BenchmarkHandler(environment="Pong-v0",
+                             search_space=search_space,
+                             seed=0)
 
 gp = GP(search_space=benchmark.get_search_space(search_space),
-                             obj_function=benchmark.get_metrics,
-                             max_budget=99)
+        obj_function=benchmark.get_metrics,
+        max_budget=99)
 
 n_iters = 10
 n_init_configs = 4

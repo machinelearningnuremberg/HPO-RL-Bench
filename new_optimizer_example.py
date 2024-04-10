@@ -1,8 +1,9 @@
 import numpy as np
 from benchmark_handler import BenchmarkHandler
 import matplotlib.pyplot as plt
+from optimizers.optimizer import Optimizer
 
-class RandomSearch:
+class RandomSearch(Optimizer):
 
     def __init__(self, max_budget=99, verbose=False):
         self.max_budget = max_budget
@@ -25,10 +26,8 @@ class RandomSearch:
         return ix, budget
 
 
-benchmark = BenchmarkHandler(data_path='',
-                             environment = "Pong-v0",
+benchmark = BenchmarkHandler(environment = "Pong-v0",
                              search_space = "PPO",
-                             return_names = ["eval_avg_returns"],
                              seed = 0)
 
 
@@ -36,7 +35,7 @@ benchmark = BenchmarkHandler(data_path='',
 
 random_searcher = RandomSearch(verbose=False)
 observed_lc, max_observed_perf, best_configuration, best_configuration_ix = benchmark.run_bo(optimizer=random_searcher,
-                                                                        epochs = 1000) 
+                                                                                             iterations=1000)
 plt.plot(observed_lc[best_configuration_ix])
 plt.title("Best observed learning curve")
 plt.show()

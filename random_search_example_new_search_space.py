@@ -11,10 +11,8 @@ search_space = {"DQN":
                      "gamma": [0.8, 0.9, 0.95, 0.98, 0.99, 1.0]}
                 }
 
-benchmark = BenchmarkHandler(data_path='',
-                             environment='CartPole-v1',
+benchmark = BenchmarkHandler(environment='CartPole-v1',
                              search_space=search_space,
-                             return_names=["eval_avg_returns"],
                              seed=0,
                              rl_algorithm=DQN)
 

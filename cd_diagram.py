@@ -3,7 +3,6 @@
 #         Jonathan Weber <jonathan.weber@uha.fr>
 #         Lhassane Idoumghar <lhassane.idoumghar@uha.fr>
 #         Pierre-Alain Muller <pierre-alain.muller@uha.fr>
-#original code in: https://github.com/hfawaz/cd-diagram
 # License: GPL3
 
 import numpy as np
@@ -22,13 +21,6 @@ from scipy.stats import wilcoxon
 from scipy.stats import friedmanchisquare
 import networkx
 
-plt.rcParams.update({
-    #"font.family": "serif",
-    "font.size": 50
-    #"text.usetex": True,
-    #"pgf.texsystem": 'pdflatex', # default is xetex
-
-})
 # inspired from orange3 https://docs.orange.biolab.si/3/data-mining-library/reference/evaluation.cd.html
 def graph_ranks(avranks, names, p_values, cd=None, cdmethod=None, lowv=None, highv=None,
                 width=6, textspace=1, reverse=False, filename=None, labels=False, **kwargs):
@@ -283,7 +275,7 @@ def form_cliques(p_values, nnames):
     return networkx.find_cliques(g)
 
 
-def draw_cd_diagram(df_perf=None, alpha=0.05, title=None, labels=False, path_name='cd-diagram.png'):
+def draw_cd_diagram(df_perf=None, alpha=0.05, title=None, labels=False, filename=None):
     """
     Draws the critical difference diagram given the list of pairwise classifiers that are
     significant or not
@@ -306,8 +298,9 @@ def draw_cd_diagram(df_perf=None, alpha=0.05, title=None, labels=False, path_nam
         }
     if title:
         plt.title(title,fontdict=font, y=0.9, x=0.5)
-
-    plt.savefig(path_name,bbox_inches='tight')
+    if not filename:
+        filename = "cd-diagram"
+    plt.savefig('%s.pdf' % filename,bbox_inches='tight')
 
 def wilcoxon_holm(alpha=0.05, df_perf=None):
     """
@@ -360,8 +353,7 @@ def wilcoxon_holm(alpha=0.05, df_perf=None):
     # loop through the hypothesis
     for i in range(k):
         # correct alpha with holm
-        #new_alpha = float(alpha / (k - i))
-        new_alpha = alpha
+        new_alpha = float(alpha / (k - i))
         # test if significant after holm's correction of alpha
         if p_values[i][2] <= new_alpha:
             p_values[i] = (p_values[i][0], p_values[i][1], p_values[i][2], True)
@@ -388,8 +380,9 @@ def wilcoxon_holm(alpha=0.05, df_perf=None):
     # return the p-values and the average ranks
     return p_values, average_ranks, max_nb_datasets
 
-if __name__=="__main__":
 
-    df_perf = pd.read_csv('DefaultvsTunedvsEnsembleCritDiffAcc.csv',index_col=False)
+ALGORITHM = "PPO"
 
-    draw_cd_diagram(df_perf=df_perf, title='Accuracy', labels=True)
+df_perf = pd.read_csv('plot_data/%s_comparisons.csv' % ALGORITHM, index_col=False)
+
+draw_cd_diagram(df_perf=df_perf, title=None, labels=True, filename="cd_diagram_%s" % ALGORITHM)

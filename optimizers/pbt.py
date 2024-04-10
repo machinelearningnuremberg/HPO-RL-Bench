@@ -17,7 +17,7 @@ class CustomStopper(tune.Stopper):
     def stop_all(self):
         return self.should_stop
 
-class PBT(Optimizer):
+class PBTOptimizer(Optimizer):
 
     def __init__(self, search_space_name: str = None, search_space: dict = None, obj_function = None,
                  max_budget: int = 100, seed: int = 0):
@@ -50,9 +50,7 @@ class PBT(Optimizer):
             checkpoint_score_attr="mean_accuracy",
             keep_checkpoints_num=4,
             num_samples=8,
-            config=config_space,
-            metric="mean_accuracy",
-            mode="max")
+            config=config_space)
         best_conf = analysis.best_config
         best_return = analysis.best_result
 
