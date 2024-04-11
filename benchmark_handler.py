@@ -11,7 +11,7 @@ except:
 
 class BenchmarkHandler:
 
-    def __init__(self, data_path: str = "", environment: str = None, search_space: str = None,
+    def __init__(self, data_path: str = "", environment: str = None, search_space: Union[str, dict] = None,
                  set: str = "static", return_metrics=None, seed=0, rl_algorithm=None):
         """
         A handler for interacting with and running HPO-RL-Bench.
@@ -24,7 +24,8 @@ class BenchmarkHandler:
           "Phoenix-v0","Seaquest-v0", "SpaceInvaders-v0", "Riverraid-v0", "Tennis-v0", "Skiing-v0", "Boxing-v0",
           "Bowling-v0", "Asteroids-v0", "Hopper-v2", "Humanoid-v2", "CartPole-v1", "MountainCar-v0", "Acrobot-v1",
           "Pendulum-v0"]
-        - search_space (str): Name of the RL algorithm.
+        - search_space (str, dict): Name of the RL algorithm, or dictionary with RL Algorithm name as key and
+        search space description dictionary as value.
           Must be one of ["PPO", "A2C", "DDPG", "SAC", "TD3", "DQN"].
         - set (str): Subset of the benchmark data to use. Can be one of ["static", "dynamic", "extended"].
           The default value is "static".
@@ -229,8 +230,8 @@ class BenchmarkHandler:
         """
         return list(self.search_space_structure[set].keys())
 
-    def get_metrics(self, config: dict, search_space: str = '', environment: str = '', seed: int = 0,
-                    budget: int = 100, set: str = "static", return_final_only=False):
+    def get_metrics(self, config: dict, search_space: str = '', environment: str = '', seed: int = np.inf,
+                    budget: int = 100, set: str = "", return_final_only=False):
         """
         Retrieves the performance metrics for a given configuration, search space, environment, and other parameters.
         The function can return either all metrics across the specified budget or only the final metric, based on
@@ -241,9 +242,9 @@ class BenchmarkHandler:
             Must have the same structure as tthe search space dict of the respective search space.
             search_space (str): The search space within which the configuration exists.
             environment (str): The environment for which metrics are to be retrieved.
-            seed (int): The seed for the random number generator, ensuring reproducibility.Default is 0.
+            seed (int): The seed for the random number generator, ensuring reproducibility.Default is self.seed.
             budget (int): The total number of evaluations to consider for metrics retrieval. Defaults to 100.
-            set (str): The benchmark subset to query. Defaults to "static".
+            set (str): The benchmark subset to query. Defaults to the value of self.set.
             return_final_only (bool): Flag to indicate whether to return only the final metric. Defaults to False.
 
         Returns:
@@ -256,8 +257,11 @@ class BenchmarkHandler:
                 search_space = self.search_space
             if environment == "":
                 environment  = self.environment
-            if seed == -np.inf:
+            if seed == np.inf:
                 seed = self.seed
+            if set == "":
+                set = self.set
+
             if set in ["static", "extended"]:
                 lr = int(config.get("lr"))
                 gamma = config.get("gamma")

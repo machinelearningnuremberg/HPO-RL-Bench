@@ -5,7 +5,7 @@ from scipy.stats import rankdata
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 # Setting global plot parameters
-rcParams["font.size"] = "18"
+rcParams["font.size"] = "22"
 plt.rcParams["figure.figsize"] = (12, 6)
 # Define constants for environments, algorithms, methods, and method colors
 ENVIRONMENTS_MUJOCO = ['Ant-v2', 'Hopper-v2', 'Humanoid-v2']

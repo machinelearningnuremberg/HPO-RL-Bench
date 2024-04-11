@@ -142,7 +142,6 @@ plt.tight_layout()
 plt.subplots_adjust(left=None, bottom=0.23, right=None, top=None, wspace=0.15, hspace=0.25)
 plt.legend(bbox_to_anchor=(0.5, 0.0), loc="lower center",
                 bbox_transform=fig.transFigure, ncol=7)
-
-plt.show()
 plt.savefig(f"{ALGORITHMS[0]}_std_err_wallclock.pdf")
+plt.show()
 plt.clf()

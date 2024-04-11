@@ -5,7 +5,7 @@ from scipy.stats import rankdata
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 # Setting global plot parameters
-rcParams["font.size"] = "18"
+rcParams["font.size"] = "22"
 plt.rcParams["figure.figsize"] = (8,7)
 # Define constants for environments, algorithms, methods, and method colors
 ENVIRONMENTS_DYNAMIC = ['CartPole-v1', 'MountainCar-v0', 'Acrobot-v1', 'Pendulum-v0', 'Enduro-v0']
@@ -129,9 +129,9 @@ for ENV_TYPE, ENVIRONMENT_LIST in ENVIRONMENTS.items():
 
     plt.ticklabel_format(style='sci', axis='x', scilimits=(1, 4))
 plt.tight_layout()
-plt.subplots_adjust(left=0.15, bottom=0.35, right=0.85, top=None, wspace=0.15, hspace=0.35)
+plt.subplots_adjust(left=0.15, bottom=0.38, right=0.85, top=None, wspace=0.15, hspace=0.35)
 plt.legend(bbox_to_anchor=(0.5, 0.02), loc="lower center",
-                bbox_transform=fig.transFigure, ncol=4)
-plt.show()
+                bbox_transform=fig.transFigure, ncol=3)
 plt.savefig(f"Dynamic_{ALGORITHMS[0]}_std_err_wallclock.pdf")
+plt.show()
 plt.clf()

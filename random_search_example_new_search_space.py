@@ -5,11 +5,9 @@ import matplotlib.pyplot as plt
 from stable_baselines3 import DQN
 from optimizers.random_search import RandomSearch
 
-
-search_space = {"DQN":
-                    {"learning_rate": [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-                     "gamma": [0.8, 0.9, 0.95, 0.98, 0.99, 1.0]}
-                }
+search_space = {"DQN": {"learning_rate": [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+                        "gamma": [0.8, 0.9, 0.95, 0.98, 0.99, 1.0]}
+               }
 
 benchmark = BenchmarkHandler(environment='CartPole-v1',
                              search_space=search_space,

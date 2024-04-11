@@ -11,16 +11,18 @@ import matplotlib
 
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-
-matplotlib.rcParams['font.family'] = 'sans-serif'
-matplotlib.rcParams['font.sans-serif'] = 'Arial'
+from matplotlib import rcParams
+# Setting global plot parameters
+rcParams["font.size"] = "22"
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = 'Arial'
 
 import operator
 import math
 from scipy.stats import wilcoxon
 from scipy.stats import friedmanchisquare
 import networkx
-
+FONTSIZE=22
 # inspired from orange3 https://docs.orange.biolab.si/3/data-mining-library/reference/evaluation.cd.html
 def graph_ranks(avranks, names, p_values, cd=None, cdmethod=None, lowv=None, highv=None,
                 width=6, textspace=1, reverse=False, filename=None, labels=False, **kwargs):
@@ -57,6 +59,11 @@ def graph_ranks(avranks, names, p_values, cd=None, cdmethod=None, lowv=None, hig
         import matplotlib
         import matplotlib.pyplot as plt
         from matplotlib.backends.backend_agg import FigureCanvasAgg
+        from matplotlib import rcParams
+        # Setting global plot parameters
+        rcParams["font.size"] = "40"
+        rcParams['font.family'] = 'sans-serif'
+        rcParams['font.sans-serif'] = 'Arial'
     except ImportError:
         raise ImportError("Function graph_ranks requires matplotlib.")
 
@@ -189,14 +196,14 @@ def graph_ranks(avranks, names, p_values, cd=None, cdmethod=None, lowv=None, hig
 
     for a in range(lowv, highv + 1):
         text(rankpos(a), cline - tick / 2 - 0.05, str(a),
-             ha="center", va="bottom", size=16)
+             ha="center", va="bottom", size=FONTSIZE)
 
     k = len(ssums)
 
     def filter_names(name):
         return name
 
-    space_between_names = 0.24
+    space_between_names = 0.34
 
     for i in range(math.ceil(k / 2)):
         chei = cline + minnotsignificant + i * space_between_names
@@ -205,8 +212,8 @@ def graph_ranks(avranks, names, p_values, cd=None, cdmethod=None, lowv=None, hig
               (textspace - 0.1, chei)],
              linewidth=linewidth)
         if labels:
-            text(textspace + 0.3, chei - 0.075, format(ssums[i], '.4f'), ha="right", va="center", size=10)
-        text(textspace - 0.2, chei, filter_names(nnames[i]), ha="right", va="center", size=16)
+            text(textspace + 0.55, chei - 0.15, format(ssums[i], '.4f'), ha="right", va="center", size=FONTSIZE-4)
+        text(textspace - 0.2, chei, filter_names(nnames[i]), ha="right", va="center", size=FONTSIZE)
 
     for i in range(math.ceil(k / 2), k):
         chei = cline + minnotsignificant + (k - i - 1) * space_between_names
@@ -215,9 +222,9 @@ def graph_ranks(avranks, names, p_values, cd=None, cdmethod=None, lowv=None, hig
               (textspace + scalewidth + 0.1, chei)],
              linewidth=linewidth)
         if labels:
-            text(textspace + scalewidth - 0.3, chei - 0.075, format(ssums[i], '.4f'), ha="left", va="center", size=10)
-        text(textspace + scalewidth + 0.2, chei, filter_names(nnames[i]),
-             ha="left", va="center", size=16)
+            text(textspace + scalewidth - 0.3, chei - 0.15, format(ssums[i], '.4f'), ha="left", va="center", size=FONTSIZE-4)
+        text(textspace + scalewidth + 0.45, chei+0.05, filter_names(nnames[i]),
+             ha="left", va="center", size=FONTSIZE)
 
     # no-significance lines
     def draw_lines(lines, side=0.05, height=0.1):
